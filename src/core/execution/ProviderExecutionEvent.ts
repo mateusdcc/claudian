@@ -104,6 +104,8 @@ export type ProviderTextDeltaEvent = ProviderEventBase<
 > &
   ProviderOpaqueEventPayload & {
     readonly text: string;
+    /** Provider-native structured result, replacing any prose streamed earlier in the turn. */
+    readonly structured?: boolean;
   };
 
 export type ProviderThinkingDeltaEvent = ProviderEventBase<
@@ -112,6 +114,8 @@ export type ProviderThinkingDeltaEvent = ProviderEventBase<
 > &
   ProviderOpaqueEventPayload & {
     readonly text: string;
+    /** This text was published by the provider as a user-facing reasoning summary. */
+    readonly summary?: boolean;
   };
 
 export type ProviderCitationsEvent = ProviderEventBase<

@@ -292,7 +292,7 @@ export type StreamChunk =
   | { type: 'user_message_start'; content: string; itemId?: string }
   | { type: 'assistant_message_start'; itemId?: string }
   | { type: 'text'; content: string }
-  | { type: 'thinking'; content: string }
+  | { type: 'thinking'; content: string; summary?: boolean }
   | { type: 'citations'; citations: CitationGroup }
   | {
       type: 'tool_use';

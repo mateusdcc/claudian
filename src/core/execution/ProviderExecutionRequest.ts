@@ -37,7 +37,7 @@ export interface ProviderExecutionContext {
   readonly linkedContent?: ProviderLinkedContentContext;
 }
 
-export type ProviderExplicitInstructionPurpose = 'title' | 'inline-edit';
+export type ProviderExplicitInstructionPurpose = 'title' | 'inline-edit' | 'plugin-task';
 
 /**
  * Literal text resolved by callers; adapters deliver it using native transport and kind/purpose framing.
@@ -59,6 +59,7 @@ export type ProviderSystemInstructions =
 
 export interface ProviderExecutionConfiguration {
   readonly systemInstructions: ProviderSystemInstructions;
+  readonly outputSchema?: Readonly<Record<string, unknown>>;
   readonly model?: string;
   /** Explicit choices cannot be replaced by saved defaults. Null omits the native override; undefined permits auxiliary defaults. */
   readonly reasoning?: string | null;

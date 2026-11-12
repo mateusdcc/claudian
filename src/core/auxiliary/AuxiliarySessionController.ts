@@ -13,6 +13,9 @@ export interface AuxiliaryRequest {
   readonly reasoning?: string | null;
   readonly prompt: string;
   readonly systemPrompt: string;
+  readonly outputSchema?: Readonly<Record<string, unknown>>;
+  readonly onText?: () => void;
+  readonly onAnalysis?: (text: string) => void;
 }
 
 export class AuxiliarySessionController {
@@ -78,6 +81,7 @@ export class AuxiliarySessionController {
     const executionRequest: ProviderExecutionRequest = {
       configuration: {
         ...(request.reasoning !== undefined ? { reasoning: request.reasoning } : {}),
+        ...(request.outputSchema ? { outputSchema: request.outputSchema } : {}),
         ...(request.model ? { model: request.model } : {}),
         systemInstructions: {
           instructions: request.systemPrompt,
@@ -93,7 +97,7 @@ export class AuxiliarySessionController {
     const active = { abortController, run };
     this.activeRun = active;
     try {
-      return await this.collector.collect(run);
+      return await this.collector.collect(run, request.onText, request.onAnalysis);
     } finally {
       if (this.activeRun === active) this.activeRun = null;
     }

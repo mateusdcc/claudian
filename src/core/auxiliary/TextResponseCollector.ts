@@ -17,13 +17,19 @@ export class AuxiliaryExecutionError extends Error {
 export class TextResponseCollector {
   async collect(
     run: ProviderExecutionRun,
+    onText?: () => void,
+    onAnalysis?: (text: string) => void,
   ): Promise<string> {
     let text = '';
     let completed = false;
     for await (const event of run.events) {
       if (event.type === 'text_delta') {
-        text += event.text;
+        text = event.structured ? event.text : text + event.text;
+        onText?.();
         continue;
+      }
+      if (event.type === 'thinking_delta' && event.summary) {
+        onAnalysis?.(event.text);
       }
       if (event.type === 'turn_completed') {
         completed = true;

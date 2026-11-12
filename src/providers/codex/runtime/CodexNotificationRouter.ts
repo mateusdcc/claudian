@@ -127,7 +127,11 @@ export class CodexNotificationRouter {
       case 'item/reasoning/summaryTextDelta':
       case 'item/reasoning/textDelta':
         this.#deferred.publishPending();
-        this.#emit({ type: 'thinking', content: (params as { delta: string }).delta });
+        this.#emit({
+          type: 'thinking',
+          content: (params as { delta: string }).delta,
+          ...(method === 'item/reasoning/summaryTextDelta' ? { summary: true } : {}),
+        });
         break;
       case 'item/plan/delta':
         this.#deferred.publishPending();

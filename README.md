@@ -17,6 +17,12 @@
 
 An Obsidian plugin that embeds AI coding agents (Claude Code, Codex, Grok Build, Antigravity CLI, OpenCode, Pi, DeepSeek Harness, and more to come) in your vault. Your vault becomes the agent's working directory — file read/write, search, bash, and multi-step workflows all work out of the box.
 
+## Claudian for Bücher
+
+This fork adds a background task API for the [Bücher Obsidian plugin](https://github.com/mateusdcc/obsidian-buches). It runs grading and tutoring in an isolated provider session, and routes results and available live analysis summaries directly to Bücher. The main Claudian chat still handles interactive questions and note editing.
+
+Install from the [fork releases](https://github.com/mateusdcc/claudian/releases/latest). Disable Claudian first, then replace `main.js`, `manifest.json`, and `styles.css` in your vault’s `.obsidian/plugins/realclaudian/`. Enable Claudian again. The plugin ID stays `realclaudian` so it can reuse your settings. Install future updates from this fork to keep the background API.
+
 ## Features & Usage
 
 Open Claudian interface from the ribbon icon or command palette. Everything works like your familiar coding agent, Claude Code, Codex, Grok Build, Antigravity CLI, OpenCode, Pi, and DeepSeek Harness — talk to the agent, and it reads, writes, edits, searches and run commands in your vault.

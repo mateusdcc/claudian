@@ -639,6 +639,10 @@ ClaudeExecutionStrategySink {
         this.#finishBackgroundTurn('completed');
         const active = this.activeRun;
         if (active?.nativeHandedOff && inputMatch !== false && message.type === 'result') {
+          if (message.subtype === 'success' && message.structured_output !== undefined
+            && this.lastEncodedRequest?.options.outputFormat) {
+            this.#emitRequested(active, { type: 'text_delta', text: JSON.stringify(message.structured_output), structured: true });
+          }
           active.lastResult = {
             turnStats: normalized.turnStats,
             succeeded: message.subtype === 'success' && !message.is_error,

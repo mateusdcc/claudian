@@ -11,7 +11,8 @@ declare const providerExecutionTransitionScopeBrand: unique symbol;
 export type ProviderExecutionOwnerKind =
   | 'chat'
   | 'title'
-  | 'inline-edit';
+  | 'inline-edit'
+  | 'plugin-task';
 
 export type ProviderExecutionInvalidationReason =
   | {

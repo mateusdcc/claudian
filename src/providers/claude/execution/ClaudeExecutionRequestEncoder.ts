@@ -149,6 +149,9 @@ export class ClaudeExecutionRequestEncoder {
         snapshot: false,
       },
       model,
+      ...(request.configuration.outputSchema
+        ? { outputFormat: { type: 'json_schema', schema: request.configuration.outputSchema } }
+        : {}),
       ...(effort ? { effort } : {}),
       ...(claudeSettings.outputStyle || promptSuggestions ? {
         settings: {

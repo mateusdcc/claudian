@@ -59,6 +59,14 @@ The text arrives in the session as an ordinary user prompt, exactly as if the us
 
 Returns the final answer of the last finished turn as Markdown: the text the agent wrote after its last piece of work, without progress commentary, tool calls or thinking. A turn still running is not included, even after a prompt was steered into it. When a turn produced no text, it returns `(interrupted)`, `(error)` or `(no reply)`. Stripping Markdown, for example for speech, is up to the caller.
 
+## Background tasks in Claudian for Bücher
+
+Check `typeof api.runTask === 'function'` before use. A request starts one isolated provider session with Claudian's last selected available model. It returns `{ text, data? }` to the caller. There is no chat tab, draft, or turn-ended subscription.
+
+- Pass `prompt` and `instructions`. Pass an optional JSON Schema as `schema` to receive parsed `data`. Codex and Claude Code use their native structured output. Other providers receive the schema as instructions and can fail with an invalid JSON error.
+- Pass an `AbortSignal` to cancel. `onProgress` receives `starting`, `working`, and `responding` as available. `onAnalysis` receives deltas when the provider publishes a user-facing analysis summary.
+- For Bücher tasks, pass `book: { path, chapter, block?, query? }`. Claudian calls Bücher's book-scoped context tool for relevant passages, prerequisites, and reading status. The source index and the tutor and reviewer skills live in Bücher. Existing solutions are excluded from the search index.
+
 ## Turn-ended event
 
 Claudian fires a workspace event when a session finishes its turn and any work the

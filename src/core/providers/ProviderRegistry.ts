@@ -1,5 +1,6 @@
 import type { AuxiliaryExecutionContext } from '../auxiliary/AuxiliaryExecutionContext';
 import { InlineEditService } from '../auxiliary/InlineEditService';
+import { type PluginTaskRequest, type PluginTaskResult, runPluginTask } from '../auxiliary/PluginTask';
 import { RoutedTitleGenerationService } from '../auxiliary/RoutedTitleGenerationService';
 import { TitleGenerationService as SharedTitleGenerationService } from '../auxiliary/TitleGenerationService';
 import type {
@@ -118,6 +119,18 @@ export class ProviderRegistry {
 
   static createInlineEditService(plugin: ProviderHost, providerId: ProviderId): InlineEditService {
     return new InlineEditService(this.createAuxiliaryExecutionContext(plugin, providerId));
+  }
+
+  static async runPluginTask(
+    plugin: ProviderHost,
+    providerId: ProviderId,
+    model: string,
+    request: PluginTaskRequest,
+  ): Promise<PluginTaskResult> {
+    request.signal?.throwIfAborted();
+    request.onProgress?.('starting');
+    await ProviderWorkspaceRegistry.ensureInitialized(plugin, providerId, 'plugin-task');
+    return runPluginTask(this.createAuxiliaryExecutionContext(plugin, providerId), model, request);
   }
 
   private static createAuxiliaryExecutionContext(

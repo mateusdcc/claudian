@@ -519,8 +519,8 @@ describe('CodexNotificationRouter', () => {
       });
 
       expect(chunks).toEqual([
-        { type: 'thinking', content: '**Analyzing' },
-        { type: 'thinking', content: ' the code**' },
+        { type: 'thinking', content: '**Analyzing', summary: true },
+        { type: 'thinking', content: ' the code**', summary: true },
       ]);
     });
 

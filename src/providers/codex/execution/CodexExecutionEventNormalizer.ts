@@ -17,7 +17,7 @@ export function adaptCodexStreamChunk(chunk: StreamChunk): RequestedRunEvent | n
     case 'text':
       return { type: 'text_delta', text: chunk.content };
     case 'thinking':
-      return { type: 'thinking_delta', text: chunk.content };
+      return { type: 'thinking_delta', text: chunk.content, ...(chunk.summary ? { summary: true } : {}) };
     case 'citations':
       return { type: 'citations', citations: chunk.citations };
     case 'tool_use':

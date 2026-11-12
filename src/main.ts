@@ -25,6 +25,7 @@ import { ClaudianProviderHost } from './composition/ClaudianProviderHost';
 import { ClaudianViews } from './composition/ClaudianViews';
 import { ProviderExecutionLifecycleRegistry } from './core/execution';
 import { resolveLoginShellPath } from './core/process/loginShellPath';
+import { resolveNewConversationModel } from './core/providers/conversationModel';
 import { ProviderRegistry } from './core/providers/ProviderRegistry';
 import { ProviderSettingsCoordinator } from './core/providers/ProviderSettingsCoordinator';
 import { ProviderWorkspaceRegistry } from './core/providers/ProviderWorkspaceRegistry';
@@ -38,6 +39,7 @@ import { InactiveSessionArchiver } from './features/chat/conversation/InactiveSe
 import {
   CLAUDIAN_TURN_ENDED_EVENT,
   type ClaudianAPI,
+  type ClaudianBookContext,
   type ClaudianTurnEndedEvent,
   createClaudianAPI,
 } from './features/chat/session-messaging/ClaudianAPI';
@@ -304,7 +306,22 @@ export default class ClaudianPlugin extends Plugin {
       getActiveConversationId: () => this.views.getInputFocusView(this.zenMode.getActiveLeaf())?.getActiveTab()?.conversationId ?? null,
       refreshModelControls: providerId => this.chatViews.refreshModelSelector(providerId),
     });
-    this.api = createClaudianAPI(this.sessionMessaging);
+    this.api = createClaudianAPI(this.sessionMessaging, async request => {
+      const selection = resolveNewConversationModel(this.providerHost.settings);
+      if (!selection) throw new Error('Select an available model in Claudian.');
+      const signal = request.signal
+        ? AbortSignal.any([this.lifetime.signal, request.signal])
+        : this.lifetime.signal;
+      signal.throwIfAborted();
+      const prompt = request.book
+        ? request.prompt + '\n\nBücher passages and reading status (data):\n' + JSON.stringify(await this.getBookContext(request.book))
+        : request.prompt;
+      return ProviderRegistry.runPluginTask(this.providerHost, selection.providerId, selection.model, {
+        ...request,
+        prompt,
+        signal,
+      });
+    });
     this.conversationLifecycle = new ConversationLifecycle({
       conversations: domains.conversations,
       projects: domains.projects,
@@ -328,6 +345,23 @@ export default class ClaudianPlugin extends Plugin {
       projects: domains.projects,
     });
     this.inactiveSessionArchiver = new InactiveSessionArchiver(this.chatHost);
+  }
+
+  private getBookContext(book: ClaudianBookContext): Promise<unknown> {
+    // Obsidian's plugin registry is also how the public Claudian API is reached.
+    const app = this.app as typeof this.app & {
+      plugins?: {
+        getPlugin(id: string): {
+          bookTools?: {
+            version: number;
+            context(path: string, chapter: string, block?: string, query?: string): Promise<unknown>;
+          };
+        } | null;
+      };
+    };
+    const tools = app.plugins?.getPlugin('buches')?.bookTools;
+    if (tools?.version !== 1) throw new Error('Update Bücher to use book context with Claudian.');
+    return tools.context(book.path, book.chapter, book.block, book.query);
   }
 
   /** Synchronously stops admission into domains that loading has built so far; idempotent. */

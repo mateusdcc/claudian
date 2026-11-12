@@ -514,6 +514,9 @@ export class CodexExecutionSession
         personality: settings.codex.responseStyle,
         ...(sandboxPolicy ? { sandboxPolicy } : {}),
         collaborationMode,
+        ...(request.configuration.outputSchema
+          ? { outputSchema: request.configuration.outputSchema }
+          : {}),
       }, this.inputBundles.handOff(bundle));
       if (sandboxRevision !== null) {
         this.threads.confirmSandboxOverride(sandboxRevision, policy.sandbox);
