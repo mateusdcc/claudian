@@ -515,6 +515,7 @@
       "extension": "Pi 확장",
       "notification": "Pi 확장 알림."
     },
+    "buchesContext": "Bücher 문맥",
     "sessionMessage": {
       "undelivered": "{senders}의 메시지를 전달하지 못했습니다.",
       "fromLabel": "보낸 세션:"

@@ -15,6 +15,7 @@ import type { ThinkingBlockState } from '@/features/chat/rendering/ThinkingBlock
 import type { WriteEditState } from '@/features/chat/rendering/tools/WriteEditRenderer';
 
 export interface ChatTurnRequest {
+  readonly bookContext?: string;
   selections?: readonly ProviderSelectionSnapshot[];
   /** Original composer text for recovery before provider acceptance. */
   draftContent?: string;

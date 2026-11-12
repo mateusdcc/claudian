@@ -15,6 +15,8 @@ export interface MentionSourceCallbacks {
 }
 
 export interface MentionSourceOptions {
+  readonly hasBookItems?: () => boolean;
+  readonly getBookItems?: (query: string) => Promise<readonly ComposerDropdownValueItem[]> | undefined;
   readonly getSessionItems?: () => readonly SessionMentionItem[];
   readonly formatVaultFileMention?: (path: string) => string;
 }
@@ -49,9 +51,11 @@ export class MentionSource implements ComposerDropdownSource {
   load(
     match: ComposerTriggerMatch,
     signal: AbortSignal,
-  ): readonly ComposerDropdownValueItem[] {
+  ): readonly ComposerDropdownValueItem[] | Promise<readonly ComposerDropdownValueItem[]> {
     if (signal.aborted) throw new DOMException('Mention lookup was cancelled.', 'AbortError');
-    return this.#vaultItems(match.query.toLocaleLowerCase(), this.options.getSessionItems?.() ?? []);
+    const items = this.#vaultItems(match.query.toLocaleLowerCase(), this.options.getSessionItems?.() ?? []);
+    const bookItems = this.options.getBookItems?.(match.query);
+    return bookItems ? bookItems.then(results => [...results, ...items], () => items) : items;
   }
 
   match(input: string, cursor: number): ComposerTriggerMatch | null {
@@ -64,7 +68,8 @@ export class MentionSource implements ComposerDropdownSource {
     // A completed `@[label](target)` mention token is not an open trigger.
     if (/^\[(?:\\[\\\]]|[^\]\\\r\n])*\]\([^\s)]+\)/.test(query)) return null;
     // Once a spaced query matches no name, further typing cannot match again; close for the rest of the line.
-    if (/\s/.test(query)) {
+    if (/\r|\n/.test(query)) return null;
+    if (/\s/.test(query) && !this.options.hasBookItems?.()) {
       const lowerQuery = query.toLocaleLowerCase();
       // Substring search is monotonic, so extending a rejected query skips the vault scan.
       if ((unmatchedQuery !== null && lowerQuery.startsWith(unmatchedQuery)) || !this.#hasAnyMatch(lowerQuery)) {

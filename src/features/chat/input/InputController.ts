@@ -208,6 +208,24 @@ export class InputController {
   // Message Sending
   // ============================================
 
+  sendBookMessage(text: string, context: string): Promise<void> {
+    if (!text.trim()) return Promise.reject(new Error('Enter a message for Claudian.'));
+    if (!this.deps.canStartTurn() || this.deps.getTabProviderId() === null || this.deps.historyRefresh()) {
+      return Promise.reject(new Error('The Claudian chat is unavailable. Check the selected model and try again.'));
+    }
+    return new Promise((resolve, reject) => {
+      void this.#dispatchMessage({
+        content: text,
+        images: [],
+        destination: 'main',
+        turnRequestOverride: {
+          text, bookContext: context, images: [],
+          editorSelection: null, browserSelection: null, canvasSelection: null,
+        },
+      }, false, resolve).then(() => reject(new Error('The Claudian chat did not accept the message.')), reject);
+    });
+  }
+
   async sendMessage(options?: SendMessageOptions): Promise<void> {
     let queued = false;
     try {
@@ -420,7 +438,10 @@ export class InputController {
           this.deps.drafts.restore('main', original, { merge: true });
           return;
         }
-        const result = await this.#dispatchMessage(capturedOptions, true, releaseAdmission);
+        const result = await this.#dispatchMessage(capturedOptions, true, () => {
+          releaseAdmission();
+          onAdmitted?.();
+        });
         if (result === 'rejected') this.deps.drafts.restore('main', original, { merge: true });
         queued = result === 'queued';
       })();

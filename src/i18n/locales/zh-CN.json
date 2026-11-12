@@ -515,6 +515,7 @@
       "extension": "Pi 扩展",
       "notification": "Pi 扩展通知。"
     },
+    "buchesContext": "Bücher 上下文",
     "sessionMessage": {
       "undelivered": "无法投递来自 {senders} 的消息。",
       "fromLabel": "来自会话："

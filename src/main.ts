@@ -34,12 +34,12 @@ import { LoopbackSessionToolServer } from './core/session-tools/LoopbackSessionT
 import type { ClaudianSettings } from './core/types';
 import { VIEW_TYPE_CLAUDIAN } from './core/types';
 import { ClaudianView } from './features/chat/ClaudianView';
+import { getBuchesTools } from './features/chat/composer/BuchesMentions';
 import { ConversationLifecycle } from './features/chat/conversation/ConversationLifecycle';
 import { InactiveSessionArchiver } from './features/chat/conversation/InactiveSessionArchiver';
 import {
   CLAUDIAN_TURN_ENDED_EVENT,
   type ClaudianAPI,
-  type ClaudianBookContext,
   type ClaudianTurnEndedEvent,
   createClaudianAPI,
 } from './features/chat/session-messaging/ClaudianAPI';
@@ -313,14 +313,23 @@ export default class ClaudianPlugin extends Plugin {
         ? AbortSignal.any([this.lifetime.signal, request.signal])
         : this.lifetime.signal;
       signal.throwIfAborted();
-      const prompt = request.book
-        ? request.prompt + '\n\nBücher passages and reading status (data):\n' + JSON.stringify(await this.getBookContext(request.book))
+      const tools = request.book ? getBuchesTools(this.app) : undefined;
+      if (request.book && !tools) throw new Error('Update Bücher to use book context with Claudian.');
+      const prompt = request.book && tools
+        ? request.prompt + '\n\nBücher passages and reading status (data):\n' + JSON.stringify(
+          await tools.context(request.book.path, request.book.chapter, request.book.block, request.book.query),
+        )
         : request.prompt;
       return ProviderRegistry.runPluginTask(this.providerHost, selection.providerId, selection.model, {
         ...request,
         prompt,
         signal,
       });
+    }, async ({ text, context }) => {
+      await this.views.activateView();
+      const view = this.views.getView();
+      if (!view) throw new Error('The Claudian chat is unavailable.');
+      await view.sendBookMessage(text, context);
     });
     this.conversationLifecycle = new ConversationLifecycle({
       conversations: domains.conversations,
@@ -345,23 +354,6 @@ export default class ClaudianPlugin extends Plugin {
       projects: domains.projects,
     });
     this.inactiveSessionArchiver = new InactiveSessionArchiver(this.chatHost);
-  }
-
-  private getBookContext(book: ClaudianBookContext): Promise<unknown> {
-    // Obsidian's plugin registry is also how the public Claudian API is reached.
-    const app = this.app as typeof this.app & {
-      plugins?: {
-        getPlugin(id: string): {
-          bookTools?: {
-            version: number;
-            context(path: string, chapter: string, block?: string, query?: string): Promise<unknown>;
-          };
-        } | null;
-      };
-    };
-    const tools = app.plugins?.getPlugin('buches')?.bookTools;
-    if (tools?.version !== 1) throw new Error('Update Bücher to use book context with Claudian.');
-    return tools.context(book.path, book.chapter, book.block, book.query);
   }
 
   /** Synchronously stops admission into domains that loading has built so far; idempotent. */

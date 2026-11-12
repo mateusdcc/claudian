@@ -4,7 +4,7 @@ import { isValidSessionMetadataId } from '@/core/bootstrap/storagePaths';
 import type { ConversationMeta } from '@/core/types';
 import { formatComposerSessionMention } from '@/features/chat/composer/composerSessionMentions';
 import { formatComposerWikilink } from '@/features/chat/composer/composerWikilinks';
-import { MentionSource } from '@/shared/composer-dropdown/MentionSource';
+import { MentionSource, type MentionSourceOptions } from '@/shared/composer-dropdown/MentionSource';
 import type { FolderMentionItem } from '@/shared/mention/types';
 import type { VaultMentionDataProvider } from '@/shared/mention/VaultMentionDataProvider';
 
@@ -19,12 +19,13 @@ export class FileContextManager {
   constructor(private readonly mentionDataProvider: VaultMentionDataProvider, sessions?: {
     getConversationList(): readonly ConversationMeta[];
     getCurrentConversationId(): string | null | undefined;
-  }) {
+  }, books?: Pick<MentionSourceOptions, 'hasBookItems' | 'getBookItems'>) {
     this.mentionSource = new MentionSource({
       getCachedVaultFolders: () => this.mentionDataProvider.getCachedVaultFolders(),
       getCachedVaultFiles: () => this.mentionDataProvider.getCachedVaultFiles(),
     }, {
       formatVaultFileMention: formatComposerWikilink,
+      ...books,
       getSessionItems: sessions ? () => sessions.getConversationList()
         .filter(row => !row.isArchived && !row.isLegacySession && row.hasSessionReference !== false
           && isValidSessionMetadataId(row.id)

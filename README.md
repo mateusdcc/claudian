@@ -19,7 +19,7 @@ An Obsidian plugin that embeds AI coding agents (Claude Code, Codex, Grok Build,
 
 ## Claudian for Bücher
 
-This fork adds a background task API for the [Bücher Obsidian plugin](https://github.com/mateusdcc/obsidian-buches). It runs grading and tutoring in an isolated provider session, and routes results and available live analysis summaries directly to Bücher. The main Claudian chat still handles interactive questions and note editing.
+This fork adds a background task API for the [Bücher Obsidian plugin](https://github.com/mateusdcc/obsidian-buches). It runs grading and tutoring in an isolated provider session, and routes results and available live analysis summaries directly to Bücher. The main chat accepts messages directly from **Ask Claudian**, shows the book excerpts and instructions in a collapsed **Bücher context** panel, and offers Bücher objects in its @ menu. Ask the agent to edit or reorder your book using the usual Claudian permissions.
 
 Install from the [fork releases](https://github.com/mateusdcc/claudian/releases/latest). Disable Claudian first, then replace `main.js`, `manifest.json`, and `styles.css` in your vault’s `.obsidian/plugins/realclaudian/`. Enable Claudian again. The plugin ID stays `realclaudian` so it can reuse your settings. Install future updates from this fork to keep the background API.
 

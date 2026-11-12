@@ -515,6 +515,7 @@
       "extension": "Pi 擴充功能",
       "notification": "Pi 擴充功能通知。"
     },
+    "buchesContext": "Bücher 上下文",
     "sessionMessage": {
       "undelivered": "無法傳遞來自 {senders} 的訊息。",
       "fromLabel": "來自工作階段："

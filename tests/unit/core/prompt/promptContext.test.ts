@@ -1,8 +1,10 @@
 import { capturedSelectionPrompt, capturedSelections } from '@test/helpers/capturedSelections';
 
 import {
+  appendBuchesContext,
   appendContextFiles,
   appendExecutionContext,
+  extractBuchesContext,
   extractUserDisplayContent,
   extractUserPromptContext,
   extractUserQuery,
@@ -349,5 +351,16 @@ describe('Markdown code context examples', () => {
   it('finds real fallback context after a protected literal opener', () => {
     expect(extractUserQuery('Explain `<editor_selection>` then <editor_selection>private</editor_selection> end'))
       .toBe('Explain `<editor_selection>` then end');
+  });
+});
+
+describe('Bücher context', () => {
+  it('preserves the sent reference material while recovering only the typed user text', () => {
+    const text = 'Add a concept before this one.';
+    const first = 'Context with a literal ]]> and <buches_context>.';
+    const second = 'Mentioned exercise.';
+    const prompt = appendBuchesContext(appendBuchesContext(text, first), second);
+    expect(getUserDisplayText({ content: prompt })).toBe(text);
+    expect(extractBuchesContext(prompt)).toBe(first + '\n\n' + second);
   });
 });

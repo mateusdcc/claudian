@@ -704,6 +704,13 @@ export class ClaudianView extends ItemView implements ZenModeSource {
     return this.tabManager?.getActiveTab() ?? null;
   }
 
+  async sendBookMessage(text: string, context: string): Promise<void> {
+    const manager = this.tabManager;
+    const tab = manager?.getActiveTab() ?? await manager?.createTab();
+    if (!tab || manager !== this.tabManager) throw new Error('The Claudian chat is unavailable.');
+    await tab.controllers.inputController.sendBookMessage(text, context);
+  }
+
   /** Focuses the active tab's composer. */
   focusActiveInput(): void {
     this.tabManager?.getActiveTab()?.composer.focus();

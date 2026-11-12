@@ -515,6 +515,7 @@
       "extension": "Расширение Pi",
       "notification": "Уведомление расширения Pi."
     },
+    "buchesContext": "Контекст Bücher",
     "sessionMessage": {
       "undelivered": "Не удалось доставить сообщения от {senders}.",
       "fromLabel": "Из сеанса:"

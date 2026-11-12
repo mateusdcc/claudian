@@ -2,12 +2,14 @@ import { Notice } from 'obsidian';
 
 import { parseCompactCommand } from '@/core/commands/compactCommand';
 import type { ProviderExecutionEvent, ProviderTurnEventScope } from '@/core/execution';
+import { appendBuchesContext } from '@/core/prompt/promptContext';
 import { ProviderRegistry } from '@/core/providers/ProviderRegistry';
 import type { ProviderId } from '@/core/providers/types';
 import { decodeSessionMessage } from '@/core/session-tools/sessionMessageEnvelope';
 import type { ChatMessage, ImageAttachment } from '@/core/types';
 import type { ChatFeatureHost } from '@/features/chat/ChatFeatureHost';
 import type { ChatSettings } from '@/features/chat/ChatSettings';
+import { attachBuchesMentions } from '@/features/chat/composer/BuchesMentions';
 import type { SessionComposerPort } from '@/features/chat/composer/SessionComposer';
 import type { ConversationController } from '@/features/chat/conversation/ConversationController';
 import type { FirstTurnAdmission } from '@/features/chat/conversation/FirstTurnAdmission';
@@ -182,6 +184,14 @@ export class MainTurnExecution {
       }
     }
 
+    const withBookContext = appendBuchesContext(turnRequest.text, turnRequest.bookContext ?? '');
+    const canonicalText = turn.origin === 'user' && displayContent.includes('Buches/')
+      ? await attachBuchesMentions(this.deps.plugin.app, displayContent, withBookContext).catch(() => withBookContext)
+      : withBookContext;
+    if (signal.aborted) {
+      restoreUnsentInput(turnRequest);
+      return;
+    }
     if (turn.origin === 'user') state.acknowledgeReview();
 
     let turnConversationId = state.currentConversationId;
@@ -205,7 +215,7 @@ export class MainTurnExecution {
       id: this.deps.generateId(),
       role: 'user',
       ...(sender ? { sessionMessage: { from: sender.from, sessionId: sender.sessionId } } : {}),
-      content: displayContent,
+      content: canonicalText,
       displayContent,                // Original user input (for UI display)
       timestamp: Date.now(),
       images: imagesForMessage,
@@ -302,12 +312,12 @@ export class MainTurnExecution {
     }
 
     try {
-      userMsg.content = admittedTurnRequest.text;
+      userMsg.content = canonicalText;
       userMsg.linkedContentPath = admittedTurnRequest.linkedContentPath;
       this.activeDelivery = turn.onDelivery;
       const submission = await this.createSubmission(
         displayContent,
-        admittedTurnRequest,
+        { ...admittedTurnRequest, text: canonicalText, bookContext: undefined },
         userMsg,
         assistantMsg,
       );
@@ -496,7 +506,7 @@ export class MainTurnExecution {
     const images = [...(request.images ?? [])];
     const selections = captureSelectionSnapshots(request);
     return {
-      canonicalText: request.text,
+      canonicalText: appendBuchesContext(request.text, request.bookContext ?? ''),
       context: {
         ...(selections.length ? { selections } : {}),
         ...(request.sessionReferences?.length ? { sessionReferences: request.sessionReferences } : {}),

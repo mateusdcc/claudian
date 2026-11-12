@@ -12,7 +12,7 @@ import { decodeSessionMessage } from '@/core/session-tools/sessionMessageEnvelop
 import { appendBrowserContext } from './browserContext';
 import { appendCanvasContext } from './canvasContext';
 import { appendEditorContext } from './editorContext';
-import { escapePromptXMLAttribute } from './promptXML';
+import { escapePromptXMLAttribute, formatPromptXMLCdata } from './promptXML';
 
 const LINKED_CONTENT_TAG = 'linked_content';
 
@@ -22,7 +22,7 @@ const LINKED_CONTENT_TAG = 'linked_content';
  * Matches: linked_note/current_note, editor_selection (with attributes), editor_cursor (with attributes),
  * context_files, canvas_selection, browser_selection
  */
-const XML_CONTEXT_PATTERN = /\n\n<(?:linked_content|linked_note|current_note|editor_selection|editor_cursor|context_files|context_sessions|canvas_selection|browser_selection)[\s>]/;
+const XML_CONTEXT_PATTERN = /\n\n<(?:linked_content|linked_note|current_note|editor_selection|editor_cursor|context_files|context_sessions|canvas_selection|browser_selection|buches_context)[\s>]/;
 const BRACKET_CONTEXT_PATTERN = /\n\[(?:Current note|Editor selection from|Browser selection from|Canvas selection from)\b/;
 
 /** Indented code and closed inline/fenced literals protect examples; unclosed fences stay unchanged. */
@@ -70,6 +70,19 @@ function stripContextOutsideCode(text: string, pattern: RegExp): string {
 
 export function formatLinkedContent(contentPath: string): string {
   return `<${LINKED_CONTENT_TAG} path="${escapePromptXMLAttribute(contentPath)}" />`;
+}
+
+const BUCHES_CONTEXT_PATTERN = /\n\n<buches_context>\r?\n<!\[CDATA\[([\s\S]*?)\]\]>\r?\n<\/buches_context>/g;
+
+export function appendBuchesContext(prompt: string, context: string): string {
+  return context ? prompt + '\n\n<buches_context>\n' + formatPromptXMLCdata(context) + '\n</buches_context>' : prompt;
+}
+
+export function extractBuchesContext(prompt: string): string {
+  const first = findContextBoundary(prompt, /\n\n<buches_context>/);
+  if (first < 0) return '';
+  return [...prompt.slice(first).matchAll(BUCHES_CONTEXT_PATTERN)]
+    .map(match => match[1].replace(/\]\]\]\]><!\[CDATA\[>/g, ']]>')).join('\n\n');
 }
 
 /** Captured context suffix of a native prompt, using the same boundary as its user text. */

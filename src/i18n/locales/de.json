@@ -515,6 +515,7 @@
       "extension": "Pi-Erweiterung",
       "notification": "Benachrichtigung der Pi-Erweiterung."
     },
+    "buchesContext": "Bücher-Kontext",
     "sessionMessage": {
       "undelivered": "Nachrichten von {senders} konnten nicht zugestellt werden.",
       "fromLabel": "Von Sitzung:"

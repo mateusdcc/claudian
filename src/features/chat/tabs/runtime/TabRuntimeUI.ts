@@ -15,6 +15,7 @@ import type {
   ProviderId,
 } from '@/core/providers/types';
 import { getChatSettingsSnapshot } from '@/features/chat/ChatSettings';
+import { getBuchesTools, listBuchesMentions } from '@/features/chat/composer/BuchesMentions';
 import { ComposerContextTray } from '@/features/chat/composer/ComposerContextTray';
 import { ComposerInfoRow } from '@/features/chat/composer/ComposerInfoRow';
 import { ComposerPromptSuggestion } from '@/features/chat/composer/ComposerPromptSuggestion';
@@ -58,6 +59,9 @@ function buildContextManagers(
   const fileContextManager = new FileContextManager(options.mentionDataProvider, {
     getConversationList: () => plugin.getConversationList(),
     getCurrentConversationId: () => runtimeRef.current()?.conversationId,
+  }, {
+    hasBookItems: () => !!getBuchesTools(plugin.app)?.mentions,
+    getBookItems: query => getBuchesTools(plugin.app)?.mentions ? listBuchesMentions(plugin.app, query) : undefined,
   });
   options.registerCleanup('tab file context manager', () => fileContextManager.destroy());
   const linkedContentController = core.session.runtime.model.linkedContentController;

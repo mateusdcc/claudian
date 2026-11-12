@@ -27,7 +27,7 @@ function source(
 }
 
 describe('MentionSource', () => {
-  it('ranks a large matching vault with bounded comparison work', () => {
+  it('ranks a large matching vault with bounded comparison work', async () => {
     const count = 4096;
     const files = Array.from({ length: count }, (_, index) =>
       file(`Note ${String((index * 2053) % count).padStart(4, '0')}.md`));
@@ -39,7 +39,7 @@ describe('MentionSource', () => {
     let items;
     let comparisons;
     try {
-      items = value.load(value.match('@Note', 5)!, new AbortController().signal);
+      items = await value.load(value.match('@Note', 5)!, new AbortController().signal);
       comparisons = compare.mock.calls.length;
     } finally {
       compare.mockRestore();
@@ -50,7 +50,7 @@ describe('MentionSource', () => {
     expect(comparisons).toBeLessThan(count * 3);
   });
 
-  it('ranks ancestor folders by their newest descendant and reflects timestamp changes', () => {
+  it('ranks ancestor folders by their newest descendant and reflects timestamp changes', async () => {
     const files = [file('Projects/old/a.md', 5), file('Projects/new/deep/b.md', 10), file('Projects/new/c.md', 2)];
     const { source: value } = source({
       getCachedVaultFiles: () => files,
@@ -62,16 +62,16 @@ describe('MentionSource', () => {
       ],
     });
     const lookup = () => value.load(value.match('@new', 4)!, new AbortController().signal);
-    expect(lookup().map(item => item.id)).toEqual([
+    expect((await lookup()).map(item => item.id)).toEqual([
       'vault-folder:Projects/new', 'vault-file:Projects/new/deep/b.md', 'vault-file:Projects/new/c.md',
     ]);
-    const folders = value.load(value.match('@Projects', 9)!, new AbortController().signal)
+    const folders = (await value.load(value.match('@Projects', 9)!, new AbortController().signal))
       .filter(item => item.id.startsWith('vault-folder:'));
     expect(folders.map(item => item.id)).toEqual([
       'vault-folder:Projects', 'vault-folder:Projects/new', 'vault-folder:Projects/old', 'vault-folder:Projects/empty',
     ]);
     files[1].stat.mtime = 1;
-    expect(lookup().map(item => item.id)).toEqual([
+    expect((await lookup()).map(item => item.id)).toEqual([
       'vault-folder:Projects/new', 'vault-file:Projects/new/c.md', 'vault-file:Projects/new/deep/b.md',
     ]);
   });

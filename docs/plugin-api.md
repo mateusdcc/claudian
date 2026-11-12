@@ -59,6 +59,12 @@ The text arrives in the session as an ordinary user prompt, exactly as if the us
 
 Returns the final answer of the last finished turn as Markdown: the text the agent wrote after its last piece of work, without progress commentary, tool calls or thinking. A turn still running is not included, even after a prompt was steered into it. When a turn produced no text, it returns `(interrupted)`, `(error)` or `(no reply)`. Stripping Markdown, for example for speech, is up to the caller.
 
+## Bücher messages in the main chat
+
+Check `typeof api.sendBookMessage === 'function'` before calling `sendBookMessage({ text, context })`. It opens the main chat, submits the text in the active tab (including a blank one), and attaches the context to the provider prompt. The transcript shows the text and a collapsed **Bücher context** disclosure. The promise resolves when the chat accepts the message or queues it behind a running turn.
+
+When Bücher is installed, the main composer also offers its book objects in the @ picker. Selected links attach the referenced object's excerpt on send.
+
 ## Background tasks in Claudian for Bücher
 
 Check `typeof api.runTask === 'function'` before use. A request starts one isolated provider session with Claudian's last selected available model. It returns `{ text, data? }` to the caller. There is no chat tab, draft, or turn-ended subscription.

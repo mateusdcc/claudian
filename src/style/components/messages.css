@@ -853,3 +853,18 @@ button.claudian-session-link:focus-visible {
   font-size: calc(12 * var(--claudian-font-px));
   color: var(--text-muted);
 }
+
+.claudian-buches-context {
+  margin-block-start: 8px;
+  color: var(--text-muted);
+  font-size: calc(12 * var(--claudian-font-px));
+}
+
+.claudian-buches-context summary { cursor: pointer; }
+
+.claudian-buches-context pre {
+  max-height: 18rem;
+  overflow: auto;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}

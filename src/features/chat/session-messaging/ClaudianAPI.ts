@@ -26,6 +26,7 @@ export interface ClaudianTaskRequest extends PluginTaskRequest {
 
 export interface ClaudianAPI {
   readonly version: 1;
+  readonly sendBookMessage?: (request: { text: string; context: string }) => Promise<void>;
   readonly runTask?: (request: ClaudianTaskRequest) => Promise<PluginTaskResult>;
   /** The session shown in the focused chat view. */
   getActiveSessionId(): string | null;
@@ -38,10 +39,12 @@ export interface ClaudianAPI {
 export function createClaudianAPI(
   messaging: SessionMessagingService,
   runTask?: ClaudianAPI['runTask'],
+  sendBookMessage?: ClaudianAPI['sendBookMessage'],
 ): ClaudianAPI {
   return Object.freeze({
     version: 1 as const,
     ...(runTask ? { runTask } : {}),
+    ...(sendBookMessage ? { sendBookMessage } : {}),
     getActiveSessionId: () => messaging.getActiveSessionId(),
     send: (sessionId: string, options: ClientSendOptions) => messaging.sendAsUser(sessionId, options),
     read: (sessionId: string) => messaging.readLastReply(sessionId),

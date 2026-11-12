@@ -42,6 +42,7 @@ export function mergeQueuedMessages(existing: QueuedMessage | null, incoming: Qu
     } : {}),
     images: images.length > 0 ? images : undefined,
     text: mergeText(earlier.text, later.text),
+    bookContext: mergeText(earlier.bookContext ?? '', later.bookContext ?? '') || undefined,
   };
   return {
     ...createQueuedMessage(mergeText(existing.content, incoming.content), request),

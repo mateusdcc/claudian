@@ -1,6 +1,6 @@
 import { type Component, Notice } from 'obsidian';
 
-import { getUserDisplayText } from '@/core/prompt/promptContext';
+import { extractBuchesContext, getUserDisplayText } from '@/core/prompt/promptContext';
 import { ProviderRegistry } from '@/core/providers/ProviderRegistry';
 import { DEFAULT_CHAT_PROVIDER_ID, type ProviderCapabilities, type ProviderSubagentLifecycleAdapter } from '@/core/providers/types';
 import type { ChatMessage, ImageAttachment, SubagentInfo, ToolCallInfo } from '@/core/types';
@@ -503,6 +503,12 @@ export class MessageRenderer {
       createSessionLink(senderEl, { sessionId, text: from });
     }
     if (text) void this.renderContent(createResponseTextBlock(contentEl), text);
+    const bookContext = extractBuchesContext(msg.content);
+    if (bookContext) {
+      const details = contentEl.createEl('details', { cls: 'claudian-buches-context' });
+      details.createEl('summary', { text: t('chat.buchesContext') });
+      details.createEl('pre', { text: bookContext });
+    }
     this.#actions.decorateUserMessage(msgEl, msg, text, context.live ? undefined : context);
     return msgEl;
   }

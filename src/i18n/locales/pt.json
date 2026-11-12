@@ -515,6 +515,7 @@
       "extension": "Extensão Pi",
       "notification": "Notificação da extensão Pi."
     },
+    "buchesContext": "Contexto do Bücher",
     "sessionMessage": {
       "undelivered": "Não foi possível entregar as mensagens de {senders}.",
       "fromLabel": "Da sessão:"
